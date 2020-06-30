@@ -58,7 +58,7 @@
 
                     Tesseract.recognize(
                       fileReader.result,
-                      'deu+fra+ita',{
+                      'deu',{
                         logger: function(m){
                             console.log("TextRecognitionInfo['" + file.name + "']:", m);
                         }
@@ -73,7 +73,7 @@
                             fileName = result.data.text.replace(/\s+/gi, " ");
                             var fileNameClean = fileName.replace(/[^\w\s]/gi, '').trim();
 
-                            if (fileNameClean.length > 4) {
+                            if (fileNameClean.length > 4 && fileNameClean.length < 30) {
                                 fileName = fileNameClean + "." + fileExtension;
                             } else {
                                 messages.add("warning", "TextRecognitionInfo['" + file.name + "']: '" + fileName + "." + fileExtension + "' is not a valid name. Using original file name.");

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Image Text Recognition Rename</title>
+    <link href="assets/css/style.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <form id="files-form">
+        <fieldset>
+            <legend>Select files to rename</legend>
+            <p>
+                <input id="files-input" type="file" name="images" multiple="multiple" accept="image/*" />
+            </p>
+        </fieldset>
+        <p>
+            <button type="submit">Start renaming...</button>
+        </p>
+    </form>
+    <ul id="messages"></ul>
+
+    <script src="assets/js/jszip-3.5.0/dist/jszip.min.js"></script>
+    <script src="assets/js/messages.js"></script>
+    <script>
+        var form = document.getElementById("files-form");
+        form.addEventListener("submit", function(event){
+            event.preventDefault();
+            messages.clear();
+
+            var filesInput = document.getElementById("files-input");
+            if (!filesInput.files || filesInput.files.length < 1) {
+                messages.add("error", "Please select files to rename.");
+                return;
+            }
+            messages.add("info", "Start renaming of " + filesInput.files.length + " file(s)...");
+
+            var zipFile = new JSZip();
+            for(var i = 0; i < filesInput.files.length; i++){
+                var file = filesInput.files[i];
+                messages.add("info", "Processing '" + file.name + "'...");
+
+
+            }
+
+            //var zip = new JSZip();
+
+            // Add an top-level, arbitrary text file with contents
+            //zip.file("Hello.txt", "Hello World\n");
+
+            // Generate a directory within the Zip file structure
+            //var img = zip.folder("images");
+
+            // Add a file to the directory, in this case an image with data URI as contents
+            //img.file("smile.gif", imgData, {base64: true});
+
+            // Generate the zip file asynchronously
+            //zip.generateAsync({type:"blob"})
+            //.then(function(content) {
+                // Force down of the Zip file
+                //saveAs(content, "archive.zip");
+            //});
+        });
+    </script>
+</body>
+</html>

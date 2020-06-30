@@ -24,7 +24,7 @@
     <script src="assets/js/messages.js"></script>
     <script>
         var form = document.getElementById("files-form");
-        form.addEventListener("submit", function(event){
+        form.addEventListener("submit", async function(event){
             event.preventDefault();
             messages.clear();
 
@@ -40,7 +40,16 @@
                 var file = filesInput.files[i];
                 messages.add("info", "Processing '" + file.name + "'...");
 
-
+                Tesseract.recognize(
+                  file.name,
+                  'eng',{
+                    logger: function(m){
+                        console.log("message;", m);
+                       messages.add("info", m);
+                    }
+                }).then(function(data){
+                    console.log(data);
+                });
             }
 
             //var zip = new JSZip();

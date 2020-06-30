@@ -7,14 +7,26 @@
     margin-bottom: 0.5em;
 }
 
+.message-info {
+    border: 1px solid #013ADF;
+    background-color: #819FF7;
+    color: #0B0B61;
+}
+
+.message-warning {
+    border: 1px solid #FFBF00;
+    background-color: #F5DA81;
+    color: black;
+}
+
 .message-error {
     border: 1px solid #FE2E2E;
     background-color: #F5A9A9;
     color: #B40404;
 }
 
-.message-info {
-    border: 1px solid #013ADF;
-    background-color: #819FF7;
-    color: #0B0B61;
+.message-success {
+    border: 1px solid #01DF01;
+    background-color: #BCF5A9;
+    color: #21610B;
 }

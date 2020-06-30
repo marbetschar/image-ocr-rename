@@ -21,6 +21,7 @@
 
     <script src="assets/js/tesseract-js/tesseract-2.1.1.min.js"></script>
     <script src="assets/js/jszip-3.5.0/dist/jszip.min.js"></script>
+    <script src="assets/js/FileSaver.js-2.0.2/dist/FileSaver.min.js"></script>
     <script src="assets/js/messages.js"></script>
     <script>
         var form = document.getElementById("files-form");
@@ -35,40 +36,82 @@
             }
             messages.add("info", "Start renaming of " + filesInput.files.length + " file(s)...");
 
-            var zipFile = new JSZip();
+
+            var zip = new JSZip();
+            var filesDone = 0;
+
             for(var i = 0; i < filesInput.files.length; i++){
                 var file = filesInput.files[i];
                 messages.add("info", "Processing '" + file.name + "'...");
 
-                Tesseract.recognize(
-                  file.name,
-                  'eng',{
-                    logger: function(m){
-                        console.log("message;", m);
-                       messages.add("info", m);
-                    }
-                }).then(function(data){
-                    console.log(data);
-                });
+                var fileReader = new FileReader();
+                fileReader.onerror = function(error){
+                    console.warn("FileLoadError['" + file.name + "']:", error);
+                    messages.add("warning", "FileLoadError['" + file.name + "']: " + error);
+
+                    zip.file(file.name + ".error", error);
+                    filesDone++;
+                };
+
+                fileReader.onload = function(){
+                    var base64Data = fileReader.result.split(',')[1];
+
+                    Tesseract.recognize(
+                      fileReader.result,
+                      'deu+fra+ita',{
+                        logger: function(m){
+                            console.log("TextRecognitionInfo['" + file.name + "']:", m);
+                        }
+
+                    }).then(function(result){
+                        console.log("TextRecognitionResult['" + file.name + "']:", result);
+
+                        var fileName = file.name;
+                        if(result.data && result.data.text) {
+                            var fileNameParts = fileName.split('.');
+                            var fileExtension = fileNameParts.pop();
+                            fileName = result.data.text.replace(/\s+/gi, " ");
+                            var fileNameClean = fileName.replace(/[^\w\s]/gi, '').trim();
+
+                            if (fileNameClean.length > 4) {
+                                fileName = fileNameClean + "." + fileExtension;
+                            } else {
+                                messages.add("warning", "TextRecognitionInfo['" + file.name + "']: '" + fileName + "." + fileExtension + "' is not a valid name. Using original file name.");
+                                fileName = file.name;
+                            }
+                        }
+                        messages.add("success", "Processed '" + file.name + "' => '" + fileName + "'.");
+
+                        zip.file(fileName, base64Data, { base64: true });
+                        filesDone++;
+
+                    }).catch(function(error){
+                        console.warn("TextRecognitionError['" + file.name + "']:", error);
+                        messages.add("warning", "TextRecognitionError['" + file.name + "']: " + error);
+
+                        zip.file(file.name, base64Data, { base64: true });
+                        filesDone++;
+                    });
+                };
+                fileReader.readAsDataURL(file);
             }
 
-            //var zip = new JSZip();
+            var waitForFiles = setInterval(function(){
+                if (filesDone >= filesInput.files.length) {
+                    clearInterval(waitForFiles);
 
-            // Add an top-level, arbitrary text file with contents
-            //zip.file("Hello.txt", "Hello World\n");
-
-            // Generate a directory within the Zip file structure
-            //var img = zip.folder("images");
-
-            // Add a file to the directory, in this case an image with data URI as contents
-            //img.file("smile.gif", imgData, {base64: true});
-
-            // Generate the zip file asynchronously
-            //zip.generateAsync({type:"blob"})
-            //.then(function(content) {
-                // Force down of the Zip file
-                //saveAs(content, "archive.zip");
-            //});
+                    messages.add("info", "Generating ZIP...");
+                    zip.generateAsync({
+                        type:"blob"
+                    }).then(function(zipContent){
+                        messages.add("success", "ZIP generated.");
+                        saveAs(zipContent, "Images.zip");
+                    }).catch(function(error){
+                        console.error(error);
+                        messages.add("error", "ZIPError: " + error);
+                    });
+                }
+            }, 500);
         });
     </script>
 </body>
